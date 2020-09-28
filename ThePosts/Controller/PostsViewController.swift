@@ -35,8 +35,8 @@ class PostsViewController: UIViewController {
         tableView.delegate = self
         tableView.dataSource = self
         setupViews()
-        postManager.getLatestPosts(name: "") { (posts, cursor) in
-            self.currentCursor = cursor
+        postManager.fetchResults(with: "") { (posts) in
+            self.currentCursor = self.postManager.cursorString
             guard posts != nil else { return }
             self.posts += posts!
             self.tableView.reloadData()
@@ -45,11 +45,11 @@ class PostsViewController: UIViewController {
     
     @objc func segmentControl(_ segmentControl: UISegmentedControl) {
         
-        postManager.getLatestPosts(name: setupSortedName(object: segmentControl.selectedSegmentIndex)) { (posts, cursor) in
+        postManager.fetchResults(with: setupSortedName(object: segmentControl.selectedSegmentIndex)) { (posts) in
             self.posts = []
             guard posts != nil else { return }
             self.posts = posts!
-            self.currentCursor = cursor
+            self.currentCursor = self.postManager.cursorString
             self.tableView.reloadData()
         }
     }
@@ -141,7 +141,7 @@ extension PostsViewController: UITableViewDelegate {
             } else {
                 fullName = K.FilterName.after + currentCursor!
             }
-            postManager.getLatestPosts(name: fullName) { (posts, cursor) in
+            postManager.fetchResults(with: fullName) { (posts) in
                 if posts == nil {
                     self.getAlert()
                 } else {
