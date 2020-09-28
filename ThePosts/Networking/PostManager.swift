@@ -8,7 +8,15 @@
 
 import Foundation
 
-class PostManager {
+class PostManager: APIRequest {
+    
+    var postsCashe = NSCache<NSString, NSArray>()
+    
+    var cursorString: String?
+    
+    typealias RequestDataType = String
+    
+    typealias ResponseDataType = [PostModel]?
     
     enum RequestError: String, Error {
         case invalidURL = "This is an invalid url."
@@ -16,8 +24,6 @@ class PostManager {
         case invalidSession = "Could not create a session."
         case invalidData = "Where are no data."
     }
-        
-    var cursorString: String?
     
     func makeRequest(from urlString: String) throws -> URLRequest {
         guard let urlPosts = URL(string: K.baseURL + urlString) else {
@@ -56,16 +62,20 @@ class PostManager {
     }
     
     func fetchResults(with query: String, closure: @escaping ([PostModel]?) -> Void) {
-        guard let request = try? makeRequest(from: query) else { return }
-        URLSession.shared.dataTask(with: request) { (data, response, error) in
-            guard error == nil else { print(RequestError.invalidSession); return }
-            guard let safeData = data else { print(RequestError.invalidData); return }
-            let posts = self.parseResponse(safeData: safeData)
-            DispatchQueue.main.async {
-                closure(posts)
-            }
+        if let cashedPosts = postsCashe.object(forKey: query as NSString) {
+            closure(cashedPosts as? [PostModel])
+        } else {
+            guard let request = try? makeRequest(from: query) else { return }
+            URLSession.shared.dataTask(with: request) { (data, response, error) in
+                guard error == nil else { print(RequestError.invalidSession); return }
+                guard let safeData = data else { print(RequestError.invalidData); return }
+                let posts = self.parseResponse(safeData: safeData)
+                self.postsCashe.setObject(posts! as NSArray, forKey: query as NSString)
+                DispatchQueue.main.async {
+                    closure(posts)
+                }
+            }.resume()
         }
-    .resume()
     }
     
     func convertDateFromWebToApp(jsonResult: Double) -> String {
@@ -78,4 +88,11 @@ class PostManager {
     }
 }
 
+protocol APIRequest {
+    
+    associatedtype RequestDataType
+    associatedtype ResponseDataType
+    func makeRequest(from urlString: RequestDataType) throws -> URLRequest
+    func parseResponse(safeData: Data) -> ResponseDataType
+}
 

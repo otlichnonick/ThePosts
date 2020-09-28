@@ -8,7 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		3A3536202521C9990055DC3B /* PostManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A35361F2521C9990055DC3B /* PostManagerTests.swift */; };
-		3A3536222521F1C60055DC3B /* URLProtocolMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A3536212521F1C60055DC3B /* URLProtocolMock.swift */; };
+		3A3536262522142B0055DC3B /* APIRequestLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A3536252522142B0055DC3B /* APIRequestLoader.swift */; };
 		3A85770E2518897D00CB53ED /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A85770D2518897D00CB53ED /* AppDelegate.swift */; };
 		3A8577102518897D00CB53ED /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A85770F2518897D00CB53ED /* SceneDelegate.swift */; };
 		3A8577152518897D00CB53ED /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 3A8577132518897D00CB53ED /* Main.storyboard */; };
@@ -37,7 +37,7 @@
 
 /* Begin PBXFileReference section */
 		3A35361F2521C9990055DC3B /* PostManagerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PostManagerTests.swift; sourceTree = "<group>"; };
-		3A3536212521F1C60055DC3B /* URLProtocolMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = URLProtocolMock.swift; sourceTree = "<group>"; };
+		3A3536252522142B0055DC3B /* APIRequestLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIRequestLoader.swift; sourceTree = "<group>"; };
 		3A85770A2518897D00CB53ED /* ThePosts.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ThePosts.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		3A85770D2518897D00CB53ED /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		3A85770F2518897D00CB53ED /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
@@ -107,7 +107,6 @@
 				3A8577162518897E00CB53ED /* Assets.xcassets */,
 				3A8577182518897E00CB53ED /* LaunchScreen.storyboard */,
 				3A85771B2518897E00CB53ED /* Info.plist */,
-				3A3536212521F1C60055DC3B /* URLProtocolMock.swift */,
 			);
 			path = ThePosts;
 			sourceTree = "<group>";
@@ -144,6 +143,7 @@
 			children = (
 				3A8577392518A0AF00CB53ED /* PostData.swift */,
 				3A85773B2518C46600CB53ED /* PostManager.swift */,
+				3A3536252522142B0055DC3B /* APIRequestLoader.swift */,
 			);
 			path = Networking;
 			sourceTree = "<group>";
@@ -265,11 +265,11 @@
 				3A85773625188CD200CB53ED /* PostsViewController.swift in Sources */,
 				3A85770E2518897D00CB53ED /* AppDelegate.swift in Sources */,
 				3A8577412518C56D00CB53ED /* PostTableViewCell.swift in Sources */,
-				3A3536222521F1C60055DC3B /* URLProtocolMock.swift in Sources */,
 				3A85773E2518C53300CB53ED /* PostModel.swift in Sources */,
 				3A8577102518897D00CB53ED /* SceneDelegate.swift in Sources */,
 				3A85773425188A4B00CB53ED /* DetailViewController.swift in Sources */,
 				3A85773C2518C46600CB53ED /* PostManager.swift in Sources */,
+				3A3536262522142B0055DC3B /* APIRequestLoader.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
