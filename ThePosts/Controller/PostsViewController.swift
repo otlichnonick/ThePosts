@@ -10,17 +10,20 @@ import UIKit
 
 class PostsViewController: UIViewController {
     
+    //MARK: - Create UI Elements
+    
     let titleFilterChoise = UILabel()
-    let sections = ["mostPopular", "mostCommented", "createdAt"]
     lazy var filterChoice: UISegmentedControl = {
-        let control = UISegmentedControl(items: sections)
+        let control = UISegmentedControl(items: [K.Sections.left, K.Sections.middle, K.Sections.right])
         control.addTarget(self, action: #selector(segmentControl(_:)), for: .valueChanged)
         return control
     }()
     let spinner = UIActivityIndicatorView()
-    var isLoading = true
     var tableView = UITableView()
     
+    //MARK: - Create other variables
+    
+    var isLoading = false
     var typeSorted: Int?
     var postManager = PostManager()
     var posts = [PostModel]()
@@ -34,8 +37,8 @@ class PostsViewController: UIViewController {
         setupViews()
         postManager.getLatestPosts(name: "") { (posts, cursor) in
             self.currentCursor = cursor
-            print("\(self.currentCursor) - in viewDidLoad")
-            self.posts += posts
+            guard posts != nil else { return }
+            self.posts += posts!
             self.tableView.reloadData()
         }
     }
@@ -44,7 +47,8 @@ class PostsViewController: UIViewController {
         
         postManager.getLatestPosts(name: setupSortedName(object: segmentControl.selectedSegmentIndex)) { (posts, cursor) in
             self.posts = []
-            self.posts = posts
+            guard posts != nil else { return }
+            self.posts = posts!
             self.currentCursor = cursor
             self.tableView.reloadData()
         }
@@ -54,18 +58,23 @@ class PostsViewController: UIViewController {
         switch object {
         case 0:
             typeSorted = 0
-            return postManager.filteredBy(.mostPopular).0
+            return K.FilterName.mostPopular
         case 1:
             typeSorted = 1
-            return postManager.filteredBy(.mostCommented).0
+            return K.FilterName.mostCommented
         case 2:
             typeSorted = 2
-            return postManager.filteredBy(.createdAt).0
+            return K.FilterName.createdAt
         default:
             break
         }
         return ""
     }
+}
+
+//MARK: - Setup views
+
+extension PostsViewController {
     
     func setupViews() {
         
@@ -74,7 +83,7 @@ class PostsViewController: UIViewController {
         
         view.addSubview(titleFilterChoise)
         titleFilterChoise.translatesAutoresizingMaskIntoConstraints = false
-        titleFilterChoise.text = "Sorted by..."
+        titleFilterChoise.text = K.titleSegmentControl
         titleFilterChoise.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor).isActive = true
         titleFilterChoise.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
         
@@ -85,7 +94,7 @@ class PostsViewController: UIViewController {
         
         view.addSubview(tableView)
         tableView.backgroundColor = #colorLiteral(red: 0.9294117647, green: 0.7882352941, blue: 0.5333333333, alpha: 1)
-        tableView.register(UINib(nibName: "PostTableViewCell", bundle: nil), forCellReuseIdentifier: "PostTableViewCell")
+        tableView.register(UINib(nibName: K.cellNibName, bundle: nil), forCellReuseIdentifier: K.cellIdentifier)
         tableView.translatesAutoresizingMaskIntoConstraints = false
         tableView.topAnchor.constraint(equalTo: filterChoice.bottomAnchor, constant: 10).isActive = true
         tableView.widthAnchor.constraint(equalTo: view.widthAnchor).isActive = true
@@ -97,7 +106,6 @@ class PostsViewController: UIViewController {
         spinner.center = view.center
         spinner.hidesWhenStopped = true
     }
-    
 }
 
 //MARK: - UITableViewDelegate methods
@@ -105,8 +113,8 @@ class PostsViewController: UIViewController {
 extension PostsViewController: UITableViewDelegate {
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        let storyboard = UIStoryboard(name: "Main", bundle: nil)
-        let detailVC = storyboard.instantiateViewController(identifier: "DetailViewController") as! DetailViewController
+        let storyboard = UIStoryboard(name: K.nameStoryboard, bundle: nil)
+        let detailVC = storyboard.instantiateViewController(identifier: K.detailVCname) as! DetailViewController
         if posts.count != 0 {
             let post = posts[indexPath.item]
             detailVC.currentPost = post
@@ -118,33 +126,40 @@ extension PostsViewController: UITableViewDelegate {
     func scrollViewDidEndDragging(_ scrollView: UIScrollView, willDecelerate decelerate: Bool) {
         
         if ((scrollView.contentOffset.y + scrollView.frame.size.height) >= scrollView.contentSize.height) {
-            if isLoading == false {
-                spinner.startAnimating()
-                currentCursor = postManager.cursorString
-                isLoading = true
-                    if currentCursor != nil {
-                        var fullName = ""
-                        if typeSorted != nil {
-                            fullName = setupSortedName(object: typeSorted!) + "&after=\(currentCursor!)"
-                        } else {
-                            fullName = "?after=\(currentCursor!)"
-                        }
-                            print("\(self.currentCursor) - in scrollViewDidEndDragging")
-                            postManager.getLatestPosts(name: fullName) { (posts, cursor) in
-                                self.posts += posts
-                                self.tableView.reloadData()
-                                //   self.currentCursor = cursor
-                                self.spinner.stopAnimating()
-                            }
-                        }
-                    }
-            } else {
-                isLoading = false
+            guard !isLoading else { isLoading = false; return }
+            isLoading = true
+            spinner.startAnimating()
+            currentCursor = postManager.cursorString
+            guard currentCursor != nil else {
+                spinner.stopAnimating()
+                getAlert()
                 return
             }
+            var fullName = ""
+            if typeSorted != nil {
+                fullName = setupSortedName(object: typeSorted!) + K.FilterName.andAfter + currentCursor!
+            } else {
+                fullName = K.FilterName.after + currentCursor!
+            }
+            postManager.getLatestPosts(name: fullName) { (posts, cursor) in
+                if posts == nil {
+                    self.getAlert()
+                } else {
+                    self.posts += posts!
+                    self.tableView.reloadData()
+                }
+                self.spinner.stopAnimating()
+            }
         }
-        
     }
+    
+    func getAlert() {
+        let alert = UIAlertController(title: "No more posts", message: nil, preferredStyle: .alert)
+        let action = UIAlertAction(title: "OK", style: .default)
+        alert.addAction(action)
+        present(alert, animated: true, completion: nil)
+    }
+}
 
 //MARK: - UITableViewDataSource methods
 
@@ -156,7 +171,7 @@ extension PostsViewController: UITableViewDataSource {
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         
-        let cell = tableView.dequeueReusableCell(withIdentifier: "PostTableViewCell", for: indexPath) as! PostTableViewCell
+        let cell = tableView.dequeueReusableCell(withIdentifier: K.cellIdentifier, for: indexPath) as! PostTableViewCell
         cell.backgroundColor = #colorLiteral(red: 0.9294117647, green: 0.7882352941, blue: 0.5333333333, alpha: 1)
         
         let post = posts[indexPath.row]
@@ -164,6 +179,5 @@ extension PostsViewController: UITableViewDataSource {
         
         return cell
     }
-    
-    
 }
+
